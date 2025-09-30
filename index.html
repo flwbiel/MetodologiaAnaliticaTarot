@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tarot – Otimização de Lucro Mensal</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <!-- fonte eu defino no CSS (Avenir primeiro) -->
+    <!-- materialize css via cdn -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link rel="stylesheet" href="src/styles.css" />
+  </head>
+  <body>
+    <noscript>Ative o JavaScript para interações dos cards.</noscript>
+
+    <!-- loading: desenho da carta rapidinho antes de entrar -->
+    <div id="loadingScreen" aria-label="Carregando">
+      <div class="loading__wrap">
+        <svg
+          id="tarotSVG"
+          class="loading__svg"
+          viewBox="0 0 300 480"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <g
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <!-- borda externa -->
+            <rect
+              data-stroke
+              x="20"
+              y="20"
+              width="260"
+              height="440"
+              rx="18"
+              ry="18"
+            />
+            <!-- moldura interna -->
+            <rect
+              data-stroke
+              x="40"
+              y="40"
+              width="220"
+              height="400"
+              rx="12"
+              ry="12"
+            />
+            <!-- linhas do topo -->
+            <line data-stroke x1="80" y1="70" x2="220" y2="70" />
+            <line data-stroke x1="100" y1="90" x2="200" y2="90" />
+            <!-- estrela -->
+            <polygon
+              data-stroke
+              points="150,160 165,205 212,205 175,232 188,277 150,252 112,277 125,232 88,205 135,205"
+            />
+            <!-- lua -->
+            <path
+              data-stroke
+              d="M195 300c0 30-24 54-54 54-8 0-16-2-22-5 22-8 38-29 38-53s-16-45-38-53c6-3 14-5 22-5 30 0 54 24 54 54z"
+            />
+            <!-- linhas da base -->
+            <line data-stroke x1="80" y1="390" x2="220" y2="390" />
+            <line data-stroke x1="100" y1="410" x2="200" y2="410" />
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- vídeo de fundo em tela cheia + fumê preto 80% -->
+    <div id="bgVideo" aria-hidden="true">
+      <video
+        id="bgVideoEl"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        poster=""
+        crossorigin="anonymous"
+      >
+        <!-- meu vídeo fica em assets/media/background.mp4 -->
+        <source src="assets/media/background.mp4" type="video/mp4" />
+        <!-- se eu quiser webm, descomento
+        <source src="assets/media/background.webm" type="video/webm" />
+        -->
+      </video>
+      <div class="bgVideo__scrim"></div>
+    </div>
+
+    <main class="content" id="landing">
+      <header>
+        <h2>Otimização de Lucro Mensal – Tarot</h2>
+      </header>
+      <button id="openCarousel" class="play-btn" aria-label="Começar">
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path d="M8 5v14l11-7-11-7z" fill="currentColor" />
+        </svg>
+      </button>
+    </main>
+
+    <!-- carrossel (materialize), tela cheia -->
+    <section
+      id="carouselOverlay"
+      role="region"
+      aria-label="Carrossel de seções"
+      hidden
+    >
+      <button
+        class="carousel__close"
+        id="carouselClose"
+        aria-label="Fechar carrossel"
+      >
+        ×
+      </button>
+      <button
+        class="carousel__nav prev"
+        id="carouselPrev"
+        aria-label="Anterior"
+      >
+        ←
+      </button>
+      <button class="carousel__nav next" id="carouselNext" aria-label="Próximo">
+        →
+      </button>
+      <div class="carousel carousel-slider center" id="carouselSlider">
+        <div class="carousel-item" id="intro">
+          <header class="card__header">
+            <h3 id="intro-title">Introdução</h3>
+          </header>
+          <div class="card__body">
+            <p>
+              Este estudo aplica o método analítico da
+              <strong>Programação Linear</strong> para encontrar a melhor
+              combinação de atendimentos de Tarot ao longo de um mês,
+              considerando restrições reais de tempo, demanda média de clientes
+              e limites para cada serviço.
+            </p>
+          </div>
+        </div>
+
+        <div class="carousel-item" id="servicos">
+          <header class="card__header">
+            <h3 id="servicos-title">Serviços e Valores</h3>
+          </header>
+          <div class="card__body">
+            <ul>
+              <li><em>Pacote 1:</em> 2 tiragens – R$ 60,00 (30 min)</li>
+              <li><em>Pacote 2:</em> 3 tiragens – R$ 70,00 (45 min)</li>
+              <li><em>Pacote 3:</em> 5 tiragens – R$ 90,00 (75 min)</li>
+              <li>
+                <em>Templo de Afrodite:</em> R$ 80,00 (30 min, máx. 1/semana)
+              </li>
+              <li>
+                <em>Sessão de Perguntas:</em> R$ 140,00 (90 min, limitada a
+                1/mês)
+              </li>
+              <li><em>Clientes mensais:</em> 10</li>
+              <li><em>Tiragens semanais (Pacote 3):</em> 5 por semana</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="carousel-item" id="variaveis">
+          <header class="card__header">
+            <h3 id="variaveis-title">Variáveis de Decisão</h3>
+          </header>
+          <div class="card__body">
+            <ul>
+              <li>x₁: Quantidade de Pacote 1 no mês</li>
+              <li>x₂: Quantidade de Pacote 2 no mês</li>
+              <li>x₃: Quantidade de Pacote 3 no mês</li>
+              <li>x₄: Quantidade de Templo de Afrodite (máx. 4/mês)</li>
+              <li>x₅: Quantidade de Sessão de Perguntas (máx. 1/mês)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="carousel-item" id="restricoes">
+          <header class="card__header">
+            <h3 id="restricoes-title">Restrições</h3>
+          </header>
+          <div class="card__body">
+            <h4>1. Clientes Mensais</h4>
+            <p><code>x₁ + x₂ + x₃ + x₄ + x₅ ≤ 10</code></p>
+            <h4>2. Tiragens semanais (Pacote 3)</h4>
+            <p><code>x₃ ≤ 20</code> (5 por semana × 4 semanas)</p>
+            <h4>3. Templo de Afrodite</h4>
+            <p><code>x₄ ≤ 4</code></p>
+            <h4>4. Sessão de Perguntas</h4>
+            <p><code>x₅ ≤ 1</code></p>
+            <h4>5. Tempo disponível nos fins de semana</h4>
+            <ul>
+              <li>3 fins de semana (6 dias): 2h/dia = 12h = 720 min</li>
+              <li>
+                1 fim de semana com sessão de perguntas: 1 dia ocupado, outro
+                livre (2h = 120 min)
+              </li>
+            </ul>
+            <p>
+              <strong>Total tempo disponível no mês:</strong> 720 + 120 =
+              <em>840 min</em>
+            </p>
+            <p>
+              <strong>Tempo gasto:</strong>
+              <code>30x₁ + 45x₂ + 75x₃ + 30x₄ + 90x₅ ≤ 840</code>
+            </p>
+          </div>
+        </div>
+
+        <div class="carousel-item" id="objetivo">
+          <header class="card__header">
+            <h3 id="objetivo-title">Função Objetivo</h3>
+          </header>
+          <div class="card__body">
+            <p><em>Maximizar lucro mensal:</em></p>
+            <pre><code>L = 60x₁ + 70x₂ + 90x₃ + 80x₄ + 140x₅</code></pre>
+          </div>
+        </div>
+
+        <div class="carousel-item" id="resolucao">
+          <header class="card__header">
+            <h3 id="resolucao-title">Resolução Analítica</h3>
+          </header>
+          <div class="card__body">
+            <h4>Estratégia</h4>
+            <ol>
+              <li>
+                Sessão de perguntas (x₅ = 1): Tempo: 90 min; Lucro: R$140; Tempo
+                restante: 840 − 90 = <em>750 min</em>
+              </li>
+              <li>
+                Templo de Afrodite (x₄ = 4): Tempo: 4 × 30 = 120 min; Lucro: 4 ×
+                80 = R$320; Tempo restante: 750 − 120 = <em>630 min</em>
+              </li>
+              <li>
+                Tiragens semanais (Pacote 3): teste x₃ = 6 → Tempo: 6 × 75 = 450
+                min; Tempo restante: 630 − 450 = <em>180 min</em>
+              </li>
+              <li>Preencher com Pacote 2: 180 / 45 = 4 → x₂ = 4</li>
+            </ol>
+            <p>
+              <strong>Total de clientes:</strong> 0 + 4 + 6 + 4 + 1 = 15 (excede
+              10)
+            </p>
+          </div>
+        </div>
+
+        <div class="carousel-item" id="ajuste">
+          <header class="card__header">
+            <h3 id="ajuste-title">Ajuste Final (Clientes)</h3>
+          </header>
+          <div class="card__body">
+            <p>Distribuição priorizando maior lucro:</p>
+            <ul>
+              <li>1 Sessão de Perguntas: x₅ = 1</li>
+              <li>4 Templo de Afrodite: x₄ = 4</li>
+              <li>5 Pacote 3: x₃ = 5</li>
+            </ul>
+            <pre><code>Tempo: 90 + (4 × 30) + (5 × 75) = 585 min (≤ 840)</code></pre>
+            <p><strong>Clientes:</strong> 1 + 4 + 5 = 10</p>
+          </div>
+        </div>
+
+        <div class="carousel-item" id="lucro">
+          <header class="card__header">
+            <h3 id="lucro-title">Cálculo do Lucro</h3>
+          </header>
+          <div class="card__body">
+            <ul>
+              <li>Sessão de Perguntas: 1 × 140 = <strong>R$140</strong></li>
+              <li>Templo de Afrodite: 4 × 80 = <strong>R$320</strong></li>
+              <li>Pacote 3: 5 × 90 = <strong>R$450</strong></li>
+            </ul>
+            <p><strong>Lucro Mensal Máximo: R$910</strong></p>
+          </div>
+        </div>
+
+        <div class="carousel-item" id="conclusao">
+          <header class="card__header">
+            <h3 id="conclusao-title">Conclusão</h3>
+          </header>
+          <div class="card__body">
+            <p>
+              Considerando tempo, demanda e limites reais, o lucro mensal máximo
+              para este modelo é de <strong>R$910,00</strong>, distribuído entre
+              10 clientes, priorizando sessões especiais e tiragens mais
+              valorizadas.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- materialize js (cdn) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="src/main.js"></script>
+  </body>
+</html>

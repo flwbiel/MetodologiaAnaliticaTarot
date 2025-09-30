@@ -97,11 +97,11 @@
       console.error("MaterializeJS não carregou. Verifique a tag de script.");
       return;
     }
-      instance = M.Carousel.init(slider, {
-        fullWidth: true,
-        indicators: false,
-        noWrap: true, // não deixa pular do fim pro início
-      });
+    instance = M.Carousel.init(slider, {
+      fullWidth: true,
+      indicators: false,
+      noWrap: true, // não deixa pular do fim pro início
+    });
   }
 
   function openCarousel(targetHash) {
@@ -178,8 +178,12 @@
     // o materialize guarda o índice do centro em instance.center
     return instance.center || 0;
   }
-  function atFirst() { return activeIndex() <= 0; }
-  function atLast() { return activeIndex() >= Math.max(0, order.length - 1); }
+  function atFirst() {
+    return activeIndex() <= 0;
+  }
+  function atLast() {
+    return activeIndex() >= Math.max(0, order.length - 1);
+  }
   function syncHash() {
     const i = activeIndex();
     const h = order[i];
@@ -188,8 +192,8 @@
   function updateNavDisabled() {
     const i = activeIndex();
     const last = Math.max(0, order.length - 1);
-    if (prevBtn) prevBtn.toggleAttribute('disabled', i <= 0);
-    if (nextBtn) nextBtn.toggleAttribute('disabled', i >= last);
+    if (prevBtn) prevBtn.toggleAttribute("disabled", i <= 0);
+    if (nextBtn) nextBtn.toggleAttribute("disabled", i >= last);
   }
   function focusActiveHeading() {
     if (!slider) return;
@@ -221,9 +225,10 @@
   window.addEventListener("resize", () =>
     requestAnimationFrame(adjustScrollableArea)
   );
-  const observer = new MutationObserver(() =>
-    { requestAnimationFrame(adjustScrollableArea); requestAnimationFrame(updateNavDisabled); }
-  );
+  const observer = new MutationObserver(() => {
+    requestAnimationFrame(adjustScrollableArea);
+    requestAnimationFrame(updateNavDisabled);
+  });
   if (slider)
     observer.observe(slider, {
       attributes: true,
@@ -245,21 +250,21 @@
 
 // injeta uma mini carta no canto inferior direito de cada slide, animando em loop
 function attachCornerLoaders() {
-  const slider = document.getElementById('carouselSlider');
+  const slider = document.getElementById("carouselSlider");
   if (!slider) return;
-  const items = Array.from(slider.querySelectorAll('.carousel-item'));
-  items.forEach(item => {
-    const existing = item.querySelector('.corner-loader');
+  const items = Array.from(slider.querySelectorAll(".carousel-item"));
+  items.forEach((item) => {
+    const existing = item.querySelector(".corner-loader");
     if (existing) {
-      const svg = existing.querySelector('svg');
+      const svg = existing.querySelector("svg");
       if (svg && !svg.dataset.miniAnimated) animateMiniSVG(svg, 3800);
       return;
     }
-    const box = document.createElement('div');
-    box.className = 'corner-loader';
+    const box = document.createElement("div");
+    box.className = "corner-loader";
     box.innerHTML = miniLoaderSVG();
     item.appendChild(box);
-    const svg = box.querySelector('svg');
+    const svg = box.querySelector("svg");
     if (svg) animateMiniSVG(svg, 3800);
   });
 }
@@ -283,16 +288,20 @@ function miniLoaderSVG() {
 // anima o SVG da mini carta igual ao loader (desenho progressivo), em loop
 function animateMiniSVG(svg, duration = 3200) {
   try {
-    const strokes = Array.from(svg.querySelectorAll('[data-mini-stroke], [data-stroke]'));
+    const strokes = Array.from(
+      svg.querySelectorAll("[data-mini-stroke], [data-stroke]")
+    );
     if (!strokes.length) return;
-    const lengths = strokes.map(el => (el.getTotalLength && el.getTotalLength()) || 600);
+    const lengths = strokes.map(
+      (el) => (el.getTotalLength && el.getTotalLength()) || 600
+    );
     const totalLen = lengths.reduce((a, b) => a + b, 0);
     // prepara os traços
     strokes.forEach((el, i) => {
       const len = lengths[i];
       el.style.strokeDasharray = `${len}`;
       el.style.strokeDashoffset = `${len}`;
-      el.style.transition = 'none';
+      el.style.transition = "none";
     });
     const t0 = performance.now();
     function tick(now) {
@@ -315,7 +324,7 @@ function animateMiniSVG(svg, duration = 3200) {
       }
       requestAnimationFrame(tick);
     }
-    svg.dataset.miniAnimated = '1';
+    svg.dataset.miniAnimated = "1";
     requestAnimationFrame(tick);
   } catch {}
 }

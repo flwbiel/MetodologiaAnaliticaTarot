@@ -433,7 +433,10 @@ code {
   pointer-events: none;
   filter: drop-shadow(0 0 8px rgba(255, 42, 109, 0.25));
 }
-.corner-loader__svg { width: 100%; height: auto; }
+.corner-loader__svg {
+  width: 100%;
+  height: auto;
+}
 .corner-loader__svg [data-mini-stroke] {
   stroke: var(--accent);
 }

@@ -203,6 +203,7 @@ body.ready .content {
   padding: clamp(10px, 2vmin, 20px);
   display: flex !important;
   flex-direction: column;
+  position: relative; /* para posicionar a mini carta no canto do slide */
   width: 100%;
   height: 100% !important;
 }
@@ -411,3 +412,28 @@ code {
 }
 
 /* bg de arcana removido (não curti o resultado) */
+
+/* estado desabilitado dos botões de navegação do carrossel */
+.carousel__nav[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* mini carta (loader) no canto inferior direito do card */
+.corner-loader {
+  position: absolute;
+  left: 50%;
+  top: 85%;
+  transform: translate(-50%, -50%);
+  width: clamp(56px, 7vmin, 84px);
+  height: auto;
+  color: var(--accent);
+  opacity: 0.85;
+  pointer-events: none;
+  filter: drop-shadow(0 0 8px rgba(255, 42, 109, 0.25));
+}
+.corner-loader__svg { width: 100%; height: auto; }
+.corner-loader__svg [data-mini-stroke] {
+  stroke: var(--accent);
+}

@@ -97,11 +97,11 @@
       console.error("MaterializeJS não carregou. Verifique a tag de script.");
       return;
     }
-    instance = M.Carousel.init(slider, {
-      fullWidth: true,
-      indicators: false,
-      noWrap: false,
-    });
+      instance = M.Carousel.init(slider, {
+        fullWidth: true,
+        indicators: false,
+        noWrap: true, // não deixa pular do fim pro início
+      });
   }
 
   function openCarousel(targetHash) {
@@ -111,6 +111,7 @@
     document.body.style.overflow = "hidden";
     document.body.classList.add("carousel-open");
 
+    attachCornerLoaders();
     initCarousel();
 
     if (instance) {
@@ -125,6 +126,7 @@
     }
     focusActiveHeading();
     requestAnimationFrame(adjustScrollableArea);
+    requestAnimationFrame(updateNavDisabled);
   }
 
   function closeCarousel() {
@@ -136,14 +138,18 @@
   }
 
   function next() {
+    if (atLast()) return;
     instance && instance.next();
     syncHash();
     focusActiveHeading();
+    updateNavDisabled();
   }
   function prev() {
+    if (atFirst()) return;
     instance && instance.prev();
     syncHash();
     focusActiveHeading();
+    updateNavDisabled();
   }
   function adjustScrollableArea() {
     try {
@@ -172,10 +178,18 @@
     // o materialize guarda o índice do centro em instance.center
     return instance.center || 0;
   }
+  function atFirst() { return activeIndex() <= 0; }
+  function atLast() { return activeIndex() >= Math.max(0, order.length - 1); }
   function syncHash() {
     const i = activeIndex();
     const h = order[i];
     if (h) history.replaceState(null, "", h);
+  }
+  function updateNavDisabled() {
+    const i = activeIndex();
+    const last = Math.max(0, order.length - 1);
+    if (prevBtn) prevBtn.toggleAttribute('disabled', i <= 0);
+    if (nextBtn) nextBtn.toggleAttribute('disabled', i >= last);
   }
   function focusActiveHeading() {
     if (!slider) return;
@@ -208,7 +222,7 @@
     requestAnimationFrame(adjustScrollableArea)
   );
   const observer = new MutationObserver(() =>
-    requestAnimationFrame(adjustScrollableArea)
+    { requestAnimationFrame(adjustScrollableArea); requestAnimationFrame(updateNavDisabled); }
   );
   if (slider)
     observer.observe(slider, {
@@ -228,3 +242,80 @@
   window.addEventListener("hashchange", fromHash);
   // do not open immediately; wait for loader to finish via onAppReady
 })();
+
+// injeta uma mini carta no canto inferior direito de cada slide, animando em loop
+function attachCornerLoaders() {
+  const slider = document.getElementById('carouselSlider');
+  if (!slider) return;
+  const items = Array.from(slider.querySelectorAll('.carousel-item'));
+  items.forEach(item => {
+    const existing = item.querySelector('.corner-loader');
+    if (existing) {
+      const svg = existing.querySelector('svg');
+      if (svg && !svg.dataset.miniAnimated) animateMiniSVG(svg, 3800);
+      return;
+    }
+    const box = document.createElement('div');
+    box.className = 'corner-loader';
+    box.innerHTML = miniLoaderSVG();
+    item.appendChild(box);
+    const svg = box.querySelector('svg');
+    if (svg) animateMiniSVG(svg, 3800);
+  });
+}
+
+function miniLoaderSVG() {
+  return `
+  <svg class="corner-loader__svg" viewBox="0 0 300 480" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+      <rect data-mini-stroke x="20" y="20" width="260" height="440" rx="24" ry="24" />
+      <rect data-mini-stroke x="50" y="50" width="200" height="380" rx="16" ry="16" />
+      <line data-mini-stroke x1="90" y1="90" x2="210" y2="90" />
+      <line data-mini-stroke x1="110" y1="115" x2="190" y2="115" />
+      <polygon data-mini-stroke points="150,175 165,215 210,215 172,242 185,282 150,258 115,282 128,242 90,215 135,215" />
+      <path data-mini-stroke d="M195 320c0 30-24 54-54 54-8 0-16-2-22-5 22-8 38-29 38-53s-16-45-38-53c6-3 14-5 22-5 30 0 54 24 54 54z" />
+      <line data-mini-stroke x1="90" y1="370" x2="210" y2="370" />
+      <line data-mini-stroke x1="110" y1="395" x2="190" y2="395" />
+    </g>
+  </svg>`;
+}
+
+// anima o SVG da mini carta igual ao loader (desenho progressivo), em loop
+function animateMiniSVG(svg, duration = 3200) {
+  try {
+    const strokes = Array.from(svg.querySelectorAll('[data-mini-stroke], [data-stroke]'));
+    if (!strokes.length) return;
+    const lengths = strokes.map(el => (el.getTotalLength && el.getTotalLength()) || 600);
+    const totalLen = lengths.reduce((a, b) => a + b, 0);
+    // prepara os traços
+    strokes.forEach((el, i) => {
+      const len = lengths[i];
+      el.style.strokeDasharray = `${len}`;
+      el.style.strokeDashoffset = `${len}`;
+      el.style.transition = 'none';
+    });
+    const t0 = performance.now();
+    function tick(now) {
+      const elapsed = now - t0;
+      // ping-pong: 0..1 (forward), 1..0 (backward), mantendo a mesma velocidade
+      const cycle = (elapsed % (duration * 2)) / duration; // 0..2
+      const p = cycle < 1 ? cycle : 2 - cycle; // 0->1->0
+      const target = totalLen * p;
+      let acc = 0;
+      for (let i = 0; i < strokes.length; i++) {
+        const len = lengths[i];
+        const start = acc;
+        const end = acc + len;
+        let drawn = 0;
+        if (target <= start) drawn = 0;
+        else if (target >= end) drawn = len;
+        else drawn = target - start;
+        strokes[i].style.strokeDashoffset = String(len - drawn);
+        acc = end;
+      }
+      requestAnimationFrame(tick);
+    }
+    svg.dataset.miniAnimated = '1';
+    requestAnimationFrame(tick);
+  } catch {}
+}

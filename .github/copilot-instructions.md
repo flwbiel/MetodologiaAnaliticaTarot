@@ -26,9 +26,9 @@
 
   - Skipped: no tasks needed for static site.
 
-- [ ] Launch the Project
+- [x] Launch the Project
 
-  - Pending: open with Live Server or default browser.
+  - Launched locally via Live Server; alternatively open `index.html` directly in the browser.
 
 - [x] Ensure Documentation is Complete
 
